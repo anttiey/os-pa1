@@ -42,12 +42,12 @@ Let's build my powerful shell with those system calls.
 
   ```C
   if (unable to execute the specified command) {
-  	fprintf(stderr, "Unable to execute %s\n", the first token of the command);
+    fprintf(stderr, "Unable to execute %s\n", the first token of the command);
   }
 
-	$ blah blahh
-	Unable to execute blah
-	$
+  $ blah blahh
+  Unable to execute blah
+  $
   ```
 
 - Use `toy` program which is included in the template code for your development and testing. It simply prints out the arguments it receives, so you can check whether your implementation handles input commands properly.
@@ -104,55 +104,55 @@ Let's build my powerful shell with those system calls.
 - When the user enters `history` in the prompt, print out the history of commands in the following format. Note that `history` will be a built-in command since the shell needs to process this command by itself.
 
   ```
-	fprintf(stderr, "%2d: %s", index, command);
-	```
+  fprintf(stderr, "%2d: %s", index, command);
+  ```
 
 - Allow the user to execute n-th command in the history with `! <number>`. See below example
 
   ```bash
-	$ ls
-	list_head.h  Makefile  pa1.c  pa1.o  parser.c  parser.h  parser.o  posh  README.md  subdir  testcases  toy  toy.c  toy.o  types.h
-	$ cp pa1.c temp.c
-	$ ls -al
-	...
-	$ cat types.h parser.h
-	$ history
-	 0: ls
-	 1: cp pa1.c temp.c
-	 2: ls -al
-	 3: cat types.h parser.h
-	 4: history
-	$ ! 0   # Rerun 0-th command in the history, which is "ls".
-	list_head.h  Makefile  pa1-backup.c  pa1.c  pa1.o  parser.c  parser.h  parser.o  posh  README.md  subdir  temp.c  testcases  toy  toy.c  toy.o	types.h
-	$ history
-	 0: ls
-	 1: cp pa1.c temp.c
-	 2: ls -al
-	 3: cat types.h parser.h
-	 4: history
-	 5: ! 0
-	 6: history
-	$ ! 4   # 4-th command in the history is "history"
-	 0: ls
-	 1: cp pa1.c temp.c
-	 2: ls -al
-	 3: cat types.h parser.h
-	 4: history
-	 5: ! 0
-	 6: history
-	 7: ! 4
-	$ ! 7  # 7-th entry is "! 4", which is "history"
-	 0: ls
-	 1: cp pa1.c temp.c
-	 2: ls -al
-	 3: cat types.h parser.h
-	 4: history
-	 5: ! 0
-	 6: history
-	 7: ! 4
-	 8: ! 7
-	$
-	```
+  $ ls
+  list_head.h  Makefile  pa1.c  pa1.o  parser.c  parser.h  parser.o  posh  README.md  subdir  testcases  toy  toy.c  toy.o  types.h
+  $ cp pa1.c temp.c
+  $ ls -al
+  ...
+  $ cat types.h parser.h
+  $ history
+   0: ls
+   1: cp pa1.c temp.c
+   2: ls -al
+   3: cat types.h parser.h
+   4: history
+  $ ! 0   # Rerun 0-th command in the history, which is "ls".
+  list_head.h  Makefile  pa1-backup.c  pa1.c  pa1.o  parser.c  parser.h  parser.o  posh  README.md  subdir  temp.c  testcases  toy  toy.c  toy.o	types.h
+  $ history
+   0: ls
+   1: cp pa1.c temp.c
+   2: ls -al
+   3: cat types.h parser.h
+   4: history
+   5: ! 0
+   6: history
+  $ ! 4   # 4-th command in the history is "history"
+   0: ls
+   1: cp pa1.c temp.c
+   2: ls -al
+   3: cat types.h parser.h
+   4: history
+   5: ! 0
+   6: history
+   7: ! 4
+  $ ! 7  # 7-th entry is "! 4", which is "history"
+   0: ls
+   1: cp pa1.c temp.c
+   2: ls -al
+   3: cat types.h parser.h
+   4: history
+   5: ! 0
+   6: history
+   7: ! 4
+   8: ! 7
+  $
+  ```
 
 - Hint: Recall the exercise done as PA0.
 
@@ -163,15 +163,15 @@ Let's build my powerful shell with those system calls.
 - The user may enter two commands with the pipe symbol `|` in between. All output of the first command should be carried to the input of the second command.
 
   ```bash
-	$ cat pa1.c | sort -n
-	$ echo "hello my cruel world" | cut -c2-5
+  $ cat pa1.c | sort -n
+  $ echo "hello my cruel world" | cut -c2-5
   ```
 
 - Note that the shell should be *sane* after processing the pipe.
 
 - Hints
   - Use `pipe()` and `dup2()`.
-	- Implement incrementally. First check whether the pipe symbol exists in the tokens. If not, just do execute the command. If exists, split the tokens into two pars and feed them to **two** different processes which are connected through a pipe.
+  - Implement incrementally. First check whether the pipe symbol exists in the tokens. If not, just do execute the command. If exists, split the tokens into two pars and feed them to **two** different processes which are connected through a pipe.
 
 
 
@@ -185,26 +185,26 @@ Let's build my powerful shell with those system calls.
 ### Submission / Grading
 - 260 pts in total
 - Source: ***pa1.c*** (220 pts in total)
-	- You can submit up to **30** times to be tested on PASubmit.
-	- Points will be prorated by testcase results.
+  - You can submit up to **30** times to be tested on PASubmit.
+  - Points will be prorated by testcase results.
 - Document: ***One PDF document*** (30 pts). It should include **ALL** the followings;
-	- Outline how programs are launched and arguments are passed
-	- How the command history is maintained and replayed later
-	- Your ***STRATEGY*** to implement the pipe
-	- AND lessons learned
+  - Outline how programs are launched and arguments are passed
+  - How the command history is maintained and replayed later
+  - Your ***STRATEGY*** to implement the pipe
+  - AND lessons learned
 
-	- NO MORE THAN ***FOUR*** PAGES
-	- DO NOT INCLUDE COVER PAGE, YOUR NAME, NOR STUDENT ID
-	- COMPLY THE STATEMENTS OTHERWISE YOU WILL GET 0 pts for documentation
+  - NO MORE THAN ***FOUR*** PAGES
+  - DO NOT INCLUDE COVER PAGE, YOUR NAME, NOR STUDENT ID
+  - COMPLY THE STATEMENTS OTHERWISE YOU WILL GET 0 pts for documentation
 - Git repository URL at git.ajou.ac.kr (10 pts)
   - To get the points, you should actually use the repository to manage your code (i.e., have more than two commits which are hours aparts). You will not get any point if you just committed your final code or the repository is not properly cloned.
-	- How to create your repository to submit:
-		- Clone this repository into your computer, create a *private* project from http://git.ajou.ac.kr, and push the local repository onto the gitlab repository.
+  - How to create your repository to submit:
+    - Clone this repository into your computer, create a *private* project from http://git.ajou.ac.kr, and push the local repository onto the gitlab repository.
     - Or create a *private* repository by importing the handout repository as a new project.
   - How to submit your git repository
-		- Generate a deploy token from Settings/Repository/Deploy Token. Make sure you're working with deploy **token** not deploy **key**.
-		- Register at PASubmit using the repository URL and deploy token.
-		- PASubmit only accepts the repository address over HTTP. **SSH URL will be rejected**.
-	- For the slip token policy, the grading will happen after the deadline. So, the deploy token should valid through the due date + 4 days.
+    - Generate a deploy token from Settings/Repository/Deploy Token. Make sure you're working with deploy **token** not deploy **key**.
+    - Register at PASubmit using the repository URL and deploy token.
+    - PASubmit only accepts the repository address over HTTP. **SSH URL will be rejected**.
+  - For the slip token policy, the grading will happen after the deadline. So, the deploy token should valid through the due date + 4 days.
 - Free to make a question through AjouBb. However, **YOU MIGHT NOT GET AN ANSWER IF THE ISSUE/TOPIC IS ALREADY DISCUSSED ON THIS HANDOUT**.
 - **QUESTIONS OVER EMAIL WILL BE IGNORED unless it concerns your privacy**.
