@@ -97,7 +97,7 @@ Let's build my powerful shell with those system calls.
 #### Keep the command history (50 pts)
 - It would be awesome if the shell remembers all your past commands and allows to run some easily, isn't it? So, the instructor initially designed the framework to support the nice feature, but could not finish by the deadline. Your task is to complete this feature.
 
-- When the framework receives a line of command, it invokes `keep_in_history()` before processing the command. Complete the function to maintain the command history. You must use `struct list_head history` to keep the history. Do not access `prev` and `next` of `struct list_head` directly as of PA0.
+- When the framework receives a line of command, it invokes `append_history()` before processing the command. Complete the function to maintain the command history. You must use `struct list_head history` to keep the history. Do not access `prev` and `next` of `struct list_head` directly as of PA0.
 
 - Your implementation should be able to hold unlimited history entries. Also, each command can be up to *some* size limit, which should be considered during allocating the buffer for command strings.
 
