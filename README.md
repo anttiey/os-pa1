@@ -36,7 +36,7 @@ Let's build my powerful shell with those system calls.
   list_head.h  Makefile  pa1-backup.c  pa1.c  parser.c  parser.h  README.md  types.h
   $ exit
   ```
-- Your task is to execute external executables (such as `ls`, `pwd`, and `cp`), **NOT** to implement the function of each command.
+- Your task is to **execute external executables** (such as `ls`, `pwd`, and `cp`), **NOT** to implement the function of each command.
 
 - When the specified executable cannot be executed for some reasons, print out the following message to `stderr`.
 
@@ -164,7 +164,7 @@ Let's build my powerful shell with those system calls.
 
   ```bash
   $ cat pa1.c | sort -n
-  $ echo "hello my cruel world" | cut -c2-5
+  $ echo hello_my_cruel_world | cut -c2-5
   ```
 
 - Note that the shell should be *sane* after processing the pipe.
