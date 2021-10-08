@@ -18,12 +18,39 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 
 #include "types.h"
 #include "list_head.h"
 #include "parser.h"
+
+void signal_handler(int signal_number) {
+	fprintf(stderr, "%d signaled!\n", signal_number);
+}
+
+struct sigaction sa = {
+	.sa_handler = signal_handler,
+	.sa_flags = 0,
+}, old_sa;
+
+/***********************************************************************
+ * struct list_head history
+ *
+ * DESCRIPTION
+ *   Use this list_head to store unlimited command history.
+ */
+LIST_HEAD(history);
+
+struct entry {
+	struct list_head list;
+	char *string;
+	int index;
+};
+
+int indexNum = -1;
 
 
 /***********************************************************************
@@ -40,20 +67,94 @@
  */
 static int run_command(int nr_tokens, char *tokens[])
 {
-	if (strcmp(tokens[0], "exit") == 0) return 0;
+
+	/* built in command */
+
+	if(!strncmp(tokens[0], "exit")) {
+		
+		return 0;
+
+	} else if(!strncmp(tokens[0], "cd", strlen("cd"))) {
+
+		if (!strncmp(tokens[1], "~", strlen("~"))) {
+			chdir(getenv("HOME"));
+		} else {
+			chdir(token[1]);
+		}
+
+		return 1;
+
+	} else if(!strncmp(tokens[0], "history", strlen("history"))) {
+
+		struct entry *temp;
+
+		list_for_each_entry_reverse(temp, &history, list) {
+
+			fprintf(stderr, "%2d: %s", temp->index, temp->string);
+
+		}
+
+		return 1;
+
+	} else if(!strncmp(tokens[0], "!", strlen("!"))) {
+
+		struct entry *temp;
+
+		list_for_each_entry_reverse(temp, &history, list) {
+
+			if(temp->index == atoi(token[1])) {
+
+				__process_command(temp->string);
+
+			}
+
+
+		}
+
+		return 1;
+
+	} else {
+
+		/* external commands */
+
+		int isPipe = 0;
+
+		for(int i = 0; i < nr_tokens; i++) {
+			if(!strcmp(tokens[i], "|")) {
+				isPipe = 1;
+			}
+		}
+
+		if(isPipe) {
+
+			// !strncmp(tokens[2], "|", strlen("|"))
+
+			int pipefd[2]; /* pipefd[0] for read, pipefd[1] for write */
+
+		} else {
+
+			pid_t cpid;
+
+			cpid = fork();
+
+			if(cpid == -1) {
+
+			} else if(cpid == 0) {
+
+			} else {
+
+		}
+
+		}
+
+	}
+
+
+	// if (!strcmp(tokens[0], "exit")) return 0;
 
 	fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 	return -EINVAL;
 }
-
-
-/***********************************************************************
- * struct list_head history
- *
- * DESCRIPTION
- *   Use this list_head to store unlimited command history.
- */
-LIST_HEAD(history);
 
 
 /***********************************************************************
@@ -65,6 +166,17 @@ LIST_HEAD(history);
  */
 static void append_history(char * const command)
 {
+
+	struct entry *newCommand = (struct entry *)malloc(sizeof(struct entry));
+	newCommand->string = (char *)malloc(strlen(string) + 1);
+	newCommand->index = indexNum++;
+
+
+	INIT_LIST_HEAD(&(newCommand->list));
+	strcpy(newCommand->string, command);
+
+	list_add(&(newCommand->list), &history)
+	
 
 }
 
