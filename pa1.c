@@ -27,6 +27,8 @@
 #include "list_head.h"
 #include "parser.h"
 
+static int __process_command(char * command);
+
 void signal_handler(int signal_number) {
 	fprintf(stderr, "%d signaled!\n", signal_number);
 }
@@ -50,7 +52,7 @@ struct entry {
 	int index;
 };
 
-int indexNum = -1;
+int indexNum = 0;
 
 
 /***********************************************************************
@@ -69,22 +71,27 @@ static int run_command(int nr_tokens, char *tokens[])
 {
 
 	/* built in command */
+	/* exit, cd, history, ! */
 
-	if(!strncmp(tokens[0], "exit")) {
+	if(!strcmp(tokens[0], "exit")) {
 		
 		return 0;
 
-	} else if(!strncmp(tokens[0], "cd", strlen("cd"))) {
+	} else if(!strcmp(tokens[0], "cd")) {
 
-		if (!strncmp(tokens[1], "~", strlen("~"))) {
+		if (nr_tokens == 1 || !strcmp(tokens[1], "~")) {
+
 			chdir(getenv("HOME"));
+
 		} else {
-			chdir(token[1]);
+
+			chdir(tokens[1]);
+
 		}
 
 		return 1;
 
-	} else if(!strncmp(tokens[0], "history", strlen("history"))) {
+	} else if(!strcmp(tokens[0], "history")) {
 
 		struct entry *temp;
 
@@ -96,63 +103,98 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		return 1;
 
-	} else if(!strncmp(tokens[0], "!", strlen("!"))) {
+	} else if(!strcmp(tokens[0], "!")) {
 
 		struct entry *temp;
 
 		list_for_each_entry_reverse(temp, &history, list) {
 
-			if(temp->index == atoi(token[1])) {
+			if(temp->index == atoi(tokens[1])) {
 
 				__process_command(temp->string);
 
 			}
 
+			return 1;
 
 		}
 
-		return 1;
 
 	} else {
 
 		/* external commands */
 
+		pid_t cpid;
+		int statloc;
 		int isPipe = 0;
 
 		for(int i = 0; i < nr_tokens; i++) {
+
 			if(!strcmp(tokens[i], "|")) {
 				isPipe = 1;
 			}
+
 		}
 
 		if(isPipe) {
 
-			// !strncmp(tokens[2], "|", strlen("|"))
+			int pipefd[2];
 
-			int pipefd[2]; /* pipefd[0] for read, pipefd[1] for write */
+			if(pipe(pipefd) == -1) {
+				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+				return -EINVAL;
+			}
 
-		} else {
-
-			pid_t cpid;
 
 			cpid = fork();
 
-			if(cpid == -1) {
+			if(cpid == 0) {
+				
+				dup2(pipefd[0]. 0);
+				close(pipefd[1]);
 
-			} else if(cpid == 0) {
+				execvp(tokens[0])
+
 
 			} else {
 
-		}
+				close(pipefd[0]);
+				dup2(pipefd[1], 1);
+
+			}
+
+
+
+		} else {
+
+			cpid = fork();
+
+			if(cpid == 0) {
+
+				if(execvp(tokens[0], tokens) < 0) {
+					fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+					return -EINVAL;
+				}
+
+				execvp(tokens[0], tokens);
+
+				return 1;
+
+			} 
+			
+			/* else {
+
+				cpid = wait(&statloc);
+
+			} */
 
 		}
+
+		cpid = wait(&statloc);
 
 	}
-
-
-	// if (!strcmp(tokens[0], "exit")) return 0;
-
-	fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+	
+	// fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 	return -EINVAL;
 }
 
@@ -168,14 +210,15 @@ static void append_history(char * const command)
 {
 
 	struct entry *newCommand = (struct entry *)malloc(sizeof(struct entry));
-	newCommand->string = (char *)malloc(strlen(string) + 1);
-	newCommand->index = indexNum++;
+	newCommand->string = (char *)malloc(strlen(command) + 1);
+	newCommand->index = indexNum;
+	indexNum = indexNum + 1;
 
 
 	INIT_LIST_HEAD(&(newCommand->list));
 	strcpy(newCommand->string, command);
 
-	list_add(&(newCommand->list), &history)
+	list_add(&(newCommand->list), &history);
 	
 
 }
