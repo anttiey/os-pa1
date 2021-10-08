@@ -29,14 +29,6 @@
 
 static int __process_command(char * command);
 
-void signal_handler(int signal_number) {
-	fprintf(stderr, "%d signaled!\n", signal_number);
-}
-
-struct sigaction sa = {
-	.sa_handler = signal_handler,
-	.sa_flags = 0,
-}, old_sa;
 
 /***********************************************************************
  * struct list_head history
@@ -111,7 +103,11 @@ static int run_command(int nr_tokens, char *tokens[])
 
 			if(temp->index == atoi(tokens[1])) {
 
-				__process_command(temp->string);
+				char *cmd = (char *)malloc(strlen(temp->string) + 1);
+				strcpy(cmd, temp->string);
+				__process_command(cmd);
+
+				free(cmd);
 
 			}
 
@@ -124,48 +120,100 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		/* external commands */
 
-		pid_t cpid;
-		int statloc;
 		int isPipe = 0;
 
 		for(int i = 0; i < nr_tokens; i++) {
 
 			if(!strcmp(tokens[i], "|")) {
 				isPipe = 1;
+				break;
 			}
 
 		}
 
 		if(isPipe) {
 
+			pid_t cpid;
+
+			char *cmd1[nr_tokens];
+			char *cmd2[nr_tokens];
+
+			int i = 0;
+			int j = 0;
+
+			for( ; i < nr_tokens; i++) {
+
+            	if(!strcmp(tokens[i], "|")) {
+               		break;
+            	}
+
+            	cmd1[i] = tokens[i];
+
+         	}
+        	
+			cmd1[i] = 0;
+         	i++;
+
+			for ( ; i < nr_tokens; i++, j++) {
+
+				cmd2[j] = tokens[i];
+
+			}
+			
+			cmd2[j] = 0;
+
 			int pipefd[2];
+			pipe(pipefd);
 
 			if(pipe(pipefd) == -1) {
 				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 				return -EINVAL;
 			}
 
-
 			cpid = fork();
 
-			if(cpid == 0) {
-				
-				dup2(pipefd[0]. 0);
+			if(cpid < 0) {
+
+				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+				return -EINVAL;
+
+			} else if(cpid == 0) {
+
+				dup2(pipefd[0], 0);
 				close(pipefd[1]);
+				execvp(cmd2[0], cmd2);
 
-				execvp(tokens[0])
-
+				return 1;
 
 			} else {
 
-				close(pipefd[0]);
-				dup2(pipefd[1], 1);
+				cpid = fork();
+
+				if(cpid < 0) {
+
+					fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+					return -EINVAL;
+
+				} else if(cpid == 0) {
+
+					dup2(pipefd[1], 1);
+					close(pipefd[0]);
+					execvp(cmd1[0], cmd1);
+
+					return 1;
+
+				} else {
+
+					int statloc;
+					cpid = wait(&statloc);
+
+				}
 
 			}
 
-
-
 		} else {
+
+			pid_t cpid;
 
 			cpid = fork();
 
@@ -176,21 +224,18 @@ static int run_command(int nr_tokens, char *tokens[])
 					return -EINVAL;
 				}
 
-				execvp(tokens[0], tokens);
+				// execvp(tokens[0], tokens);
 
-				return 1;
+				exit(0);
 
 			} 
-			
-			/* else {
 
-				cpid = wait(&statloc);
-
-			} */
+			int statloc;
+			cpid = wait(&statloc);
 
 		}
 
-		cpid = wait(&statloc);
+		return 1;
 
 	}
 	
