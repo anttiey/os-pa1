@@ -132,8 +132,6 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		if(isPipe) {
 
-			pid_t cpid;
-
 			char *cmd1[nr_tokens];
 			char *cmd2[nr_tokens];
 
@@ -162,84 +160,56 @@ static int run_command(int nr_tokens, char *tokens[])
 			cmd2[j] = 0;
 
 			int pipefd[2];
-			pipe(pipefd);
 
 			if(pipe(pipefd) == -1) {
 				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 				return -EINVAL;
 			}
 
-			cpid = fork();
+			pid_t cpid = fork();
 
 			if(cpid < 0) {
 
-            fprintf(stderr, "Unable to execute %s\n", tokens[0]);
-            return -EINVAL;
+            	fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+            	return -EINVAL;
 
          	} else if(cpid == 0) {
 
-            // cmd1 -> cmd2
-
-            cpid = fork();
-
-            if(cpid < 0) {
-
-               fprintf(stderr, "Unable to execute %s\n", tokens[0]);
-
-            } else if(cpid == 0) {
-
-               // cmd2
-               dup2(pipefd[0], 0);
-               close(pipefd[1]);
-               execvp(cmd2[0], cmd2);
-
-            } else {
-
-               // cmd1
-               dup2(pipefd[1], 1);
-               close(pipefd[0]);
-               execvp(cmd1[0], cmd1);
-
-            }     
-
-            exit(0);
-
-			/* if(cpid < 0) {
-
-				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
-				return -EINVAL;
-
-			} else if(cpid == 0) {
-
-				dup2(pipefd[0], 0);
 				close(pipefd[1]);
-				execvp(cmd2[0], cmd2);
+               	dup2(pipefd[0], 0);
+            	close(pipefd[0]);
+            	execvp(cmd2[0], cmd2);
+				
 
-			} else {
+         	} else {
 
-				cpid = fork();
+            	pid_t pid = fork();
 
-				if(cpid < 0) {
+            	if(pid < 0) {
 
-					fprintf(stderr, "Unable to execute %s\n", tokens[0]);
-					return -EINVAL;
+               		fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+               		return -EINVAL;
 
-				} else if(cpid == 0) {
+            	} else if(pid == 0) {
 
-					dup2(pipefd[1], 1);
 					close(pipefd[0]);
-					execvp(cmd1[0], cmd1);
+					dup2(pipefd[1], 1);
+               		close(pipefd[1]);
+               		execvp(cmd1[0], cmd1);
 
-					exit(0);
+            	} else {
 
-				} else {
+					close(pipefd[1]);
 
-					int statloc;
-					cpid = wait(&statloc);
+               		int statloc;
+               		wait(&statloc);
+					wait(&statloc);
 
-				} */
+            	}
+     
 
 			}
+
 
 		} else {
 
@@ -254,17 +224,19 @@ static int run_command(int nr_tokens, char *tokens[])
 					return -EINVAL;
 				}
 
-				execvp(tokens[0], tokens);
+				//execvp(tokens[0], tokens);
 
 				exit(0);
 
 			} 
 
 			int statloc;
-			cpid = wait(&statloc);
+            cpid = wait(&statloc);
+
 
 		}
 
+		return 1;
 	}
 	
 	// fprintf(stderr, "Unable to execute %s\n", tokens[0]);
