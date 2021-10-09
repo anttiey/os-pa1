@@ -182,8 +182,6 @@ static int run_command(int nr_tokens, char *tokens[])
 				close(pipefd[1]);
 				execvp(cmd2[0], cmd2);
 
-				return 1;
-
 			} else {
 
 				cpid = fork();
@@ -199,7 +197,7 @@ static int run_command(int nr_tokens, char *tokens[])
 					close(pipefd[0]);
 					execvp(cmd1[0], cmd1);
 
-					return 1;
+					exit(0);
 
 				} else {
 
@@ -225,7 +223,7 @@ static int run_command(int nr_tokens, char *tokens[])
 
 				execvp(tokens[0], tokens);
 
-				return 1;
+				exit(0);
 
 			} 
 
