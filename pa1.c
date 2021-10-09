@@ -114,7 +114,6 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		}
 
-
 	} else {
 
 		/* external commands */
@@ -132,8 +131,8 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		if(isPipe) {
 
-			char *cmd1[nr_tokens];
-			char *cmd2[nr_tokens];
+			char *cmdHead[nr_tokens];
+			char *cmdTail[nr_tokens];
 
 			int i = 0;
 			int j = 0;
@@ -144,20 +143,20 @@ static int run_command(int nr_tokens, char *tokens[])
                		break;
             	}
 
-            	cmd1[i] = tokens[i];
+            	cmdHead[i] = tokens[i];
 
          	}
         	
-			cmd1[i] = 0;
+			cmdHead[i] = 0;
          	i++;
 
 			for ( ; i < nr_tokens; i++, j++) {
 
-				cmd2[j] = tokens[i];
+				cmdTail[j] = tokens[i];
 
 			}
 			
-			cmd2[j] = 0;
+			cmdTail[j] = 0;
 
 			int pipefd[2];
 
@@ -178,7 +177,7 @@ static int run_command(int nr_tokens, char *tokens[])
 				close(pipefd[0]);
 				dup2(pipefd[1], 1);
                	close(pipefd[1]);
-               	execvp(cmd1[0], cmd1);
+               	execvp(cmdHead[0], cmdHead);
 				
 
          	} else {
@@ -195,7 +194,7 @@ static int run_command(int nr_tokens, char *tokens[])
 					close(pipefd[1]);
                		dup2(pipefd[0], 0);
             		close(pipefd[0]);
-            		execvp(cmd2[0], cmd2);
+            		execvp(cmdTail[0], cmdTail);
 
             	} else {
 
@@ -207,7 +206,6 @@ static int run_command(int nr_tokens, char *tokens[])
 
             	}
      
-
 			}
 
 
@@ -217,29 +215,32 @@ static int run_command(int nr_tokens, char *tokens[])
 
 			cpid = fork();
 
-			if(cpid == 0) {
+			if(cpid < 0) {
+
+				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+            	return -EINVAL;
+
+			} else if(cpid == 0) {
 
 				if(execvp(tokens[0], tokens) < 0) {
 					fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 					return -EINVAL;
 				}
 
-				//execvp(tokens[0], tokens);
-
 				exit(0);
 
 			} 
 
 			int statloc;
-            cpid = wait(&statloc);
-
+            wait(&statloc);
 
 		}
 
 		return 1;
+
 	}
 	
-	// fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+	fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 	return -EINVAL;
 
 }
@@ -260,13 +261,11 @@ static void append_history(char * const command)
 	newCmd->index = indexNum;
 	indexNum = indexNum + 1;
 
-
 	INIT_LIST_HEAD(&(newCmd->list));
 	strcpy(newCmd->string, command);
 
 	list_add(&(newCmd->list), &history);
 	
-
 }
 
 
