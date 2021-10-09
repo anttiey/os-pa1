@@ -175,10 +175,10 @@ static int run_command(int nr_tokens, char *tokens[])
 
          	} else if(cpid == 0) {
 
-				close(pipefd[1]);
-               	dup2(pipefd[0], 0);
-            	close(pipefd[0]);
-            	execvp(cmd2[0], cmd2);
+				close(pipefd[0]);
+				dup2(pipefd[1], 1);
+               	close(pipefd[1]);
+               	execvp(cmd1[0], cmd1);
 				
 
          	} else {
@@ -192,10 +192,10 @@ static int run_command(int nr_tokens, char *tokens[])
 
             	} else if(pid == 0) {
 
-					close(pipefd[0]);
-					dup2(pipefd[1], 1);
-               		close(pipefd[1]);
-               		execvp(cmd1[0], cmd1);
+					close(pipefd[1]);
+               		dup2(pipefd[0], 0);
+            		close(pipefd[0]);
+            		execvp(cmd2[0], cmd2);
 
             	} else {
 
