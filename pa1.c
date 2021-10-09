@@ -29,7 +29,6 @@
 
 static int __process_command(char * command);
 
-
 /***********************************************************************
  * struct list_head history
  *
@@ -109,9 +108,9 @@ static int run_command(int nr_tokens, char *tokens[])
 
 				free(cmd);
 
-			}
+				return 1;
 
-			return 1;
+			}
 
 		}
 
@@ -224,9 +223,9 @@ static int run_command(int nr_tokens, char *tokens[])
 					return -EINVAL;
 				}
 
-				// execvp(tokens[0], tokens);
+				execvp(tokens[0], tokens);
 
-				exit(0);
+				return 1;
 
 			} 
 
@@ -235,12 +234,11 @@ static int run_command(int nr_tokens, char *tokens[])
 
 		}
 
-		return 1;
-
 	}
 	
 	// fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 	return -EINVAL;
+
 }
 
 
@@ -254,16 +252,16 @@ static int run_command(int nr_tokens, char *tokens[])
 static void append_history(char * const command)
 {
 
-	struct entry *newCommand = (struct entry *)malloc(sizeof(struct entry));
-	newCommand->string = (char *)malloc(strlen(command) + 1);
-	newCommand->index = indexNum;
+	struct entry *newCmd = (struct entry *)malloc(sizeof(struct entry));
+	newCmd->string = (char *)malloc(strlen(command) + 1);
+	newCmd->index = indexNum;
 	indexNum = indexNum + 1;
 
 
-	INIT_LIST_HEAD(&(newCommand->list));
-	strcpy(newCommand->string, command);
+	INIT_LIST_HEAD(&(newCmd->list));
+	strcpy(newCmd->string, command);
 
-	list_add(&(newCommand->list), &history);
+	list_add(&(newCmd->list), &history);
 	
 
 }
