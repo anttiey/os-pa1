@@ -173,6 +173,39 @@ static int run_command(int nr_tokens, char *tokens[])
 
 			if(cpid < 0) {
 
+            fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+            return -EINVAL;
+
+         	} else if(cpid == 0) {
+
+            // cmd1 -> cmd2
+
+            cpid = fork();
+
+            if(cpid < 0) {
+
+               fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+
+            } else if(cpid == 0) {
+
+               // cmd2
+               dup2(pipefd[0], 0);
+               close(pipefd[1]);
+               execvp(cmd2[0], cmd2);
+
+            } else {
+
+               // cmd1
+               dup2(pipefd[1], 1);
+               close(pipefd[0]);
+               execvp(cmd1[0], cmd1);
+
+            }     
+
+            exit(0);
+
+			/* if(cpid < 0) {
+
 				fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 				return -EINVAL;
 
@@ -204,7 +237,7 @@ static int run_command(int nr_tokens, char *tokens[])
 					int statloc;
 					cpid = wait(&statloc);
 
-				}
+				} */
 
 			}
 
