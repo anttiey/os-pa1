@@ -198,6 +198,7 @@ static int run_command(int nr_tokens, char *tokens[])
 
             	} else {
 
+					close(pipefd[0]);
 					close(pipefd[1]);
 
                		int statloc;
